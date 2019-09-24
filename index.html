@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>My site</title>
+    <style>
+      .generate-payment-order {
+        display: flex;
+        width: 200px;
+        flex-direction: column;
+      }
+      .payment-order-data {
+        list-style-type: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>My site</h1>
+    <form
+      onsubmit="handleGeneratePaymentOrder(event, this)"
+      class="generate-payment-order"
+      placeholder="Hola"
+    >
+      <span>Generate payment order:</span>
+      <input type="text" name="concept" placeholder="Concept" />
+      <input type="text" name="reference" placeholder="Reference" />
+      <input type="text" name="amount" placeholder="Amount" />
+      <input type="submit" class="generate-button" value="Generate" />
+    </form>
+    <ul class="payment-order-data"></ul>
+    <script>
+      function handleGeneratePaymentOrder(event, form) {
+        event.preventDefault();
+        fetch("https://sandbox.mymoid.com/views/button/order", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+            // Replace with your generated token:
+            // https://apidocumentation.mymoid.com/#authentication
+            Authorization:
+              "Basic YmIyODc4MGM1NTk5M2JiMGYzMTAxMTEwMzA5NzhkODU3ZTNlNmNjOTk5NTIxMWFiMGZmODk1Yzk1NDFmMDA5ODo3M2U0NjUwNzM1YzM0NTE5MGQ5ZWIyYTgzOGYwNjdiZjA2MjI0MjhmODkzMjUxZjU0MTg2NzI4MGIzMjE2M2Qw"
+          },
+          body: JSON.stringify({
+            currency: "EUR",
+            payType: "PREAUTH",
+            concept: form.concept.value,
+            reference: form.reference.value,
+            amount: form.amount.value
+          })
+        })
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(data) {
+            //Success code goes here
+            console.log(`Success ${data.data.paymentOrderId}`);
+            const generatedPaymentOrderData = document.querySelector(
+              ".payment-order-data"
+            );
+            generatedPaymentOrderData.innerHTML = `
+              <li><strong>Generated payment order:</strong></li>
+              <li>
+                <span class="payment-order-id">paymentOrderId: ${
+                  data.data.paymentOrderId
+                }</span>
+              </li>
+              <li>
+                  <span class="shortcode">shortCode: ${
+                    data.data.shortCode
+                  }</span>
+              </li>
+              <li>
+                  <span class="currency-code">currencyCode: ${
+                    data.data.currencyCode
+                  }</span>
+              </li>
+              <li>
+                  <span class="merchant-id">merchantId: ${
+                    data.data.merchantId
+                  }</span>
+              </li>
+              <li>
+                  <span class="reference">reference: ${
+                    data.data.reference
+                  }</span>
+              </li>
+              <li>
+                  <span class="concept">concept: ${data.data.concept}</span>
+              </li>
+              <li>
+                  <span class="status">status: ${data.data.status}</span>
+              </li>
+            `;
+          })
+          .catch(function(error) {
+            //Failure
+            console.log(`Error ${error}`);
+          });
+      }
+    </script>
+  </body>
+</html>
